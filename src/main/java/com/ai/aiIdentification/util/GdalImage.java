@@ -1,5 +1,7 @@
 package com.ai.aiIdentification.util;
 
+import java.io.File;
+
 import org.gdal.gdal.Band;
 import org.gdal.gdal.Dataset;
 import org.gdal.gdal.Driver;
@@ -54,8 +56,9 @@ public class GdalImage {
      * @param latMax 右下角经度
      * @param lonMin 右下角纬度
      * @param lonMax 左上角纬度
+     * @param workPath 
      * */
-    public String clipTiff(double latMin,double latMax,double lonMin, double lonMax) {
+    public String clipTiff(double latMin,double latMax,double lonMin, double lonMax, String workPath) {
     	double dx = geoTransform[1], dy = geoTransform[5];
     	//设置要裁剪的起始像元位置，以及各方向的像元数
         int startX = (int) ((latMin - ulCoord[0]) / dx);
@@ -74,7 +77,7 @@ public class GdalImage {
         destGeoTransform[3] = geoTransform[3] + startX * geoTransform[4] + startY * geoTransform[5];
       //创建结果图像
         Driver driver = gdal.GetDriverByName("GTIFF");
-        Dataset outputDs = driver.Create("D:\\guo\\data\\clip1.tif", clipX, clipY, b, dataType);
+        Dataset outputDs = driver.Create(workPath+"/clip1.tif", clipX, clipY, b, dataType);
         outputDs.SetGeoTransform(destGeoTransform);
         outputDs.SetProjection(proj);
       //按band读取
@@ -93,20 +96,23 @@ public class GdalImage {
         }
 
         //释放资源
-        rds.delete();
+//        rds.delete();
         outputDs.delete();
-        return "D:\\guo\\data\\clip1.tif";
+        return workPath+"/clip1.tif";
     }
-    
+    /**
+     * tif转png
+     * */
     public String tif2png() {
-    	Driver hDriver=rds.GetDriver();
-        System.out.println("Driver: "+hDriver.getShortName()+"/"+hDriver.getLongName());
-
-        hDriver.CreateCopy("D:\\guo\\data\\clip1.png", rds);
-
+    	Driver hDriver= gdal.GetDriverByName("PNG");
+    	File temp =new File(tiffPath);
+    	
+    	String tempPng=temp.getParent()+"/input.png";
+    	Dataset png=hDriver.CreateCopy(tempPng, rds);
         rds.delete();
+        png.delete();
         hDriver.delete();
-		return null;
+		return tempPng;
     	
     }
 }

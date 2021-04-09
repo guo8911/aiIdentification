@@ -1,6 +1,7 @@
 package com.ai.aiIdentification.service;
 
 public interface IImageService {
+	String workFolder();
 	String imageRecognition();
-	String organizeFolder();
+	boolean organizeFolder(String[] filePath,String dsPath);
 }

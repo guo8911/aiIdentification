@@ -51,22 +51,37 @@ public class ImageServiceImpl implements IImageService {
 		return null;
 	}
 	/**
+	 * 创建工作目录
+	 * */
+	public String workFolder() {
+		Date date = new Date();
+		String newPath=basePath+"/"+date.getTime();
+		File workPath=new File(newPath);
+		if(!workPath.exists()) {
+			workPath.mkdirs();
+		}
+		return newPath;
+		
+	}
+	/**
 	 * 整理文件目录
 	 * */
 	@Override
-	public String organizeFolder() {
+	public boolean organizeFolder(String[] filePath,String dsPath) {
 		// TODO Auto-generated method stub
-		Date date = new Date();
-		String newPath=basePath+"/"+date.getTime();
-		File filePath=new File(newPath);
-		if(!filePath.exists()) {
-			filePath.mkdirs();
+		boolean tab=false;
+		File newPath=new File(dsPath);
+		if(!newPath.exists()) {
+			newPath.mkdirs();
 		}
-		File classFile=new File(basePath+"/class.txt");
-		File labelFile=new File(basePath+"/label_img.png");
-		classFile.renameTo(new File(filePath+ File.separator+ classFile.getName()));
-		labelFile.renameTo(new File(filePath+ File.separator+ labelFile.getName()));
-		return null;
+		for(String tempPath : filePath) {
+			File tempFile=new File(tempPath);
+			tab=tempFile.renameTo(new File(newPath+ File.separator+ tempFile.getName()));
+			if(!tab) {
+				return tab;
+			}
+		}
+		return tab;
 	}
 
 }

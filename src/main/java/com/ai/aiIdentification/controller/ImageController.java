@@ -1,6 +1,7 @@
 package com.ai.aiIdentification.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -16,6 +17,8 @@ import com.ai.aiIdentification.util.GdalImage;
 @RequestMapping("/image")
 @RestController
 public class ImageController {
+	@Value("${imageService.basePath}")
+	private String basePath;//工作空间
 	@Autowired
 	private IImageService iImageService;
 //	public static final String inPutTiffPath = "D:\\guo\\data\\GF2_PMS2_E113.2_N34.9_20201107_WGS84-MSS2.tiff";//要求TIFF必须为4326投影
@@ -24,11 +27,20 @@ public class ImageController {
     public static GdalImage gdalImage = new GdalImage(inPutTiffPath);
 	@GetMapping("/recognition")
 	public String imageRecognition() {
-		gdalImage = new GdalImage("D:\\guo\\data\\clip1.tif");
-		gdalImage.tif2png();
-//		gdalImage.clipTiff(114.117138, 114.126009, 30.471375, 30.478209);
-//		iImageService.imageRecognition();
-//		iImageService.organizeFolder();
-		return "T";
+		boolean tab =false;
+		String workPath=iImageService.workFolder();
+		String clipImage=gdalImage.clipTiff(114.117138, 114.126009, 30.471375, 30.478209,workPath);
+		GdalImage tempImage = new GdalImage(clipImage);
+		String tempPng=tempImage.tif2png();
+		tab=iImageService.organizeFolder(new String[]{tempPng}, basePath);
+		if(!tab) {
+			return "请清理目录";
+		}
+		iImageService.imageRecognition();
+		tab=iImageService.organizeFolder(new String[]{basePath+"/label_img.png",basePath+"/class.txt",basePath+"/input.png"}, workPath);
+		if(!tab) {
+			return "请清理目录";
+		}
+		return "workPath";
 	}
 }
