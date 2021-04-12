@@ -115,4 +115,12 @@ public class GdalImage {
 		return tempPng;
     	
     }
+    /**
+     * 创建geojson数据
+     * */
+    public String createJson() {
+    	
+		return proj;
+    	
+    }
 }
