@@ -41,6 +41,7 @@ public class ImageController {
 		if(!tab) {
 			return "请清理目录";
 		}
-		return "workPath";
+		String geo=tempImage.createJson(workPath+"/class.txt");
+		return geo;
 	}
 }

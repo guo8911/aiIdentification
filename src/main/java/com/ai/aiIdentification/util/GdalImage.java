@@ -1,12 +1,23 @@
 package com.ai.aiIdentification.util;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.gdal.gdal.Band;
 import org.gdal.gdal.Dataset;
 import org.gdal.gdal.Driver;
 import org.gdal.gdal.gdal;
 import org.gdal.gdalconst.gdalconst;
+
+import com.amazonaws.util.json.JSONException;
+import com.amazonaws.util.json.JSONObject;
 
 public class GdalImage {
 
@@ -109,7 +120,7 @@ public class GdalImage {
     	
     	String tempPng=temp.getParent()+"/input.png";
     	Dataset png=hDriver.CreateCopy(tempPng, rds);
-        rds.delete();
+//        rds.delete();
         png.delete();
         hDriver.delete();
 		return tempPng;
@@ -117,10 +128,103 @@ public class GdalImage {
     }
     /**
      * 创建geojson数据
+     * @throws JSONException 
      * */
-    public String createJson() {
+    public String createJson(String txt) {
+    	File txtFile= new File(txt);
+    	ArrayList list = new ArrayList();
+		try {
+			FileInputStream fileInputStream = new FileInputStream(txtFile);
+			InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream, "UTF-8");
+			BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+			String text = null;
+			while ((text = bufferedReader.readLine()) != null) {
+					list.add(text.trim());
+			}
+			fileInputStream.close();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		String geo = null;
+		try {
+			geo = getPolygonGeoJson(list);
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		append2File(txtFile.getParent()+"/"+txtFile.getName().replaceAll(".txt", ".json"), geo);
+		rds.delete();
+		return geo;
     	
-		return proj;
-    	
+    }
+	public String getPolygonGeoJson(ArrayList list) throws JSONException {
+		String head = "{\"type\": \"FeatureCollection\"," + "\"features\": [";
+        String end = "  ] }";
+        String geometry = " { \"type\":\"Feature\",\"geometry\":";
+        String properties = ",\"properties\":{ \"name\":";
+        String geo = null;
+        double dx = geoTransform[1], dy = geoTransform[5];
+		for(int i=0;i<list.size();i++) {
+			JSONObject js = new JSONObject();
+			List<Object> ptsTotal = new ArrayList<Object>();
+			List<Object> pts = new ArrayList<Object>();
+			String[] tempText=list.get(i).toString().split("\\s+");
+            List<Double> pt1 = new ArrayList<Double>();
+            pt1.add(ulCoord[0]+Double.parseDouble(tempText[0])*dx);
+            pt1.add(ulCoord[0]+Double.parseDouble(tempText[1])*dy);
+            List<Double> pt2 = new ArrayList<Double>();
+            pt2.add(ulCoord[0]+Double.parseDouble(tempText[2])*dx);
+            pt2.add(ulCoord[0]+Double.parseDouble(tempText[3])*dy);
+            List<Double> pt3 = new ArrayList<Double>();
+            pt3.add(ulCoord[0]+Double.parseDouble(tempText[4])*dx);
+            pt3.add(ulCoord[0]+Double.parseDouble(tempText[5])*dy);
+            List<Double> pt4 = new ArrayList<Double>();
+            pt4.add(ulCoord[0]+Double.parseDouble(tempText[6])*dx);
+            pt4.add(ulCoord[0]+Double.parseDouble(tempText[7])*dy);
+            
+            pts.add(pt1);
+            pts.add(pt4);
+            pts.add(pt3);
+            pts.add(pt2);
+            pts.add(pt1);
+            
+            ptsTotal.add(pts);
+            
+            js.put("type", "Polygon");
+            js.put("coordinates", ptsTotal);
+            geo = geometry + js.toString() + properties + tempText[8]+ "} }" + "," + geo;
+		}
+		if (geo.contains(",")) {
+            geo = geo.substring(0, geo.lastIndexOf(","));
+        }
+
+        geo = head + geo + end;
+		return geo;
+	}
+	public void append2File(String file, String content) {
+        FileWriter fw = null;
+
+        try {
+        	//如果文件存在，则追加内容；如果文件不存在，则创建文件
+            File f = new File(file);
+            fw = new FileWriter(f, true);
+        } 
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        PrintWriter pw = new PrintWriter(fw);
+        pw.println(content);
+        pw.flush();
+
+        try {
+            fw.flush();
+            pw.close();
+            fw.close();
+        } 
+        catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
