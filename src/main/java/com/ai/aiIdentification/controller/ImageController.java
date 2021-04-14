@@ -42,6 +42,8 @@ public class ImageController {
 			return "请清理目录";
 		}
 		String geo=tempImage.createJson(workPath+"/class.txt");
+		/*GdalImage tempImage = new GdalImage("D:\\guo\\Test\\1617950975974\\clip1.tif");
+		String geo=tempImage.createJson("D:\\guo\\Test\\1617950975974\\class.txt");*/
 		return geo;
 	}
 }

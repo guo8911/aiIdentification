@@ -172,16 +172,16 @@ public class GdalImage {
 			String[] tempText=list.get(i).toString().split("\\s+");
             List<Double> pt1 = new ArrayList<Double>();
             pt1.add(ulCoord[0]+Double.parseDouble(tempText[0])*dx);
-            pt1.add(ulCoord[0]+Double.parseDouble(tempText[1])*dy);
+            pt1.add(ulCoord[1]+Double.parseDouble(tempText[1])*dy);
             List<Double> pt2 = new ArrayList<Double>();
             pt2.add(ulCoord[0]+Double.parseDouble(tempText[2])*dx);
-            pt2.add(ulCoord[0]+Double.parseDouble(tempText[3])*dy);
+            pt2.add(ulCoord[1]+Double.parseDouble(tempText[3])*dy);
             List<Double> pt3 = new ArrayList<Double>();
             pt3.add(ulCoord[0]+Double.parseDouble(tempText[4])*dx);
-            pt3.add(ulCoord[0]+Double.parseDouble(tempText[5])*dy);
+            pt3.add(ulCoord[1]+Double.parseDouble(tempText[5])*dy);
             List<Double> pt4 = new ArrayList<Double>();
             pt4.add(ulCoord[0]+Double.parseDouble(tempText[6])*dx);
-            pt4.add(ulCoord[0]+Double.parseDouble(tempText[7])*dy);
+            pt4.add(ulCoord[1]+Double.parseDouble(tempText[7])*dy);
             
             pts.add(pt1);
             pts.add(pt4);
